@@ -1,0 +1,35 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-paper text-ink dark:bg-paper-dark dark:text-ink-dark font-body antialiased;
+}
+
+::selection {
+  @apply bg-folder-200 text-folder-900;
+}
+
+/* Visible keyboard focus, kept even though we style buttons ourselves */
+:focus-visible {
+  outline: 2px solid theme("colors.folder.500");
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+.card-tab-edge {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+}
