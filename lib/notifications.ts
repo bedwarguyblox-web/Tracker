@@ -59,7 +59,7 @@ export function checkAndNotify(deadlines: Deadline[]) {
         ? `Due today: ${d.activity}`
         : `${milestone} day${milestone === 1 ? "" : "s"} left: ${d.activity}`;
 
-    new Notification(title, {
+    fireNotification(title, {
       body: `${d.subject} — ${d.description || "No description"}`,
       tag: key,
     });
@@ -69,6 +69,23 @@ export function checkAndNotify(deadlines: Deadline[]) {
   }
 
   if (changed) writeLog(log);
+}
+
+/**
+ * Some mobile browsers (notably Chrome on Android) don't support the
+ * `new Notification()` constructor at all — they throw
+ * "Illegal constructor" and require a Service Worker's
+ * `registration.showNotification()` instead. Rather than add a full
+ * service worker just for this, we try the constructor and fail
+ * silently if it's unsupported, so a missed notification never takes
+ * down the rest of the app.
+ */
+function fireNotification(title: string, options: NotificationOptions) {
+  try {
+    new Notification(title, options);
+  } catch (err) {
+    console.warn("Notification not supported in this browser; skipping.", err);
+  }
 }
 
 /** Call once on mount; re-checks on an interval while the tab stays open. */
