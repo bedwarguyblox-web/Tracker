@@ -1,0 +1,14 @@
+Redesign prompt — MRC Deadline Tracker
+Paste this whole thing into a fresh Claude / Claude Code session with the project open.
+Redesign the UI of this app (a shared deadline tracker for MRC students — subjects, activities, due dates, priority, pinning). Keep all existing functionality, data, and component boundaries (DeadlineCard, DashboardStats, TabsNav, SearchFilterBar, AddDeadlineModal, HistoryModal, Header) — this is a visual and interaction pass, not a rebuild.
+The problem with the current UI: it's flat and lifeless. Plain rectangular buttons, no motion anywhere, no mark/logo, generic card grid. Nothing responds when you touch it. It needs to feel like a real, cared-for product a student would want to open every day — not a spreadsheet with rounded corners.
+Direction: Lean into what this app actually is — a shared academic paper-trail. Think school admin ephemera done well: hall passes, library card catalogs, memo slips, a stamped due-date card taped to a corkboard. The current build already gestures at this (folder-, stamp- tokens) but never commits — push it further and give it an actual signature moment, or propose a different concrete direction if you think it serves the subject better. Don't default to generic dark-mode-SaaS-with-one-accent-color; make a real choice and justify it.
+Requirements:
+A wordmark/logo mark for the header — doesn't need to be a complex illustration, but something more considered than plain text (a stamped seal, a torn-tab shape, a card-catalog tab — your call, tied to the direction above).
+Motion with purpose, not decoration: hover/press feedback on every interactive element (buttons, tabs, cards, the pin toggle), a satisfying transition when a deadline moves between urgency states or gets checked off, a small delight on successful add/edit. Respect prefers-reduced-motion. One well-orchestrated moment beats scattered effects everywhere.
+Buttons and controls that feel physical: real pressed/hover/disabled states, not just a color swap.
+Fully responsive, phone-first through desktop — the phone layout (see attached screenshot for current state) is the primary surface, so design and test that breakpoint first, not as an afterthought of the desktop layout.
+Keep the urgency color system (overdue/today/orange/yellow/normal) legible and central — it's the actual point of the app — just make it feel designed rather than default Tailwind badges.
+Visible keyboard focus states throughout.
+Before writing code: propose a short design plan (palette as 4–6 named hex values, type pairing, layout concept, the one signature element) and check it against "would this be the generic answer for any student app" before building.
+Tech context: Next.js + Tailwind (tailwind.config.ts already has folder-* and stamp-* color scales you can extend or replace), components are client-side React ("use client"), Supabase backend — don't touch data logic.

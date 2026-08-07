@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "MRC Deadline Tracker"
+description = "A shared deadline tracker for MRC students, designed around a tactile school-records paper trail with urgency-led due dates, priorities, pinning, and completion history."
+version = "1.0.0"
+id = "artifacts/deadline-tracker"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23641
+
+[services.development]
+run = "pnpm --filter @workspace/deadline-tracker run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/deadline-tracker", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/deadline-tracker/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23641"
+BASE_PATH = "/"
