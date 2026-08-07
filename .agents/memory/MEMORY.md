@@ -1,0 +1,1 @@
+- [GitHub remote history](github-remote-history.md) — the connected Tracker repository's main branch is an unrelated older Next/Supabase history; publish workspace changes on a separate branch.
