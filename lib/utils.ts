@@ -1,4 +1,4 @@
-import { differenceInCalendarDays, differenceInHours, isPast } from "date-fns";
+import { differenceInCalendarDays, differenceInHours, differenceInMinutes, isPast } from "date-fns";
 import type { UrgencyStage } from "./types";
 
 /**
@@ -56,17 +56,29 @@ export function getStageStyles(stage: UrgencyStage) {
 export function getRemainingLabel(dueDate: string | Date): string {
   const due = new Date(dueDate);
   const now = new Date();
-  const daysLeft = differenceInCalendarDays(due, now);
 
-  if (daysLeft < 0) {
+  // Base "overdue" on the actual instant, never on a truncated hour/day count —
+  // differenceInHours/differenceInCalendarDays round toward zero, so a deadline
+  // that's still minutes in the future can otherwise show as "0 hours left" and
+  // get misread as overdue.
+  if (isPast(due)) {
+    const daysLeft = differenceInCalendarDays(due, now);
     const overdueDays = Math.abs(daysLeft);
-    return overdueDays === 1 ? "Overdue by 1 day" : `Overdue by ${overdueDays} days`;
+    if (overdueDays >= 1) {
+      return overdueDays === 1 ? "Overdue by 1 day" : `Overdue by ${overdueDays} days`;
+    }
+    return "Overdue";
   }
+
+  const daysLeft = differenceInCalendarDays(due, now);
 
   if (daysLeft === 0) {
     const hoursLeft = differenceInHours(due, now);
-    if (hoursLeft <= 0) return "Overdue";
-    return hoursLeft === 1 ? "1 hour left" : `${hoursLeft} hours left`;
+    if (hoursLeft >= 1) {
+      return hoursLeft === 1 ? "1 hour left" : `${hoursLeft} hours left`;
+    }
+    const minutesLeft = Math.max(1, differenceInMinutes(due, now));
+    return minutesLeft === 1 ? "1 minute left" : `${minutesLeft} minutes left`;
   }
 
   return daysLeft === 1 ? "1 day left" : `${daysLeft} days left`;
