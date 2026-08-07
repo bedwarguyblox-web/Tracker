@@ -94,24 +94,34 @@ export default function HomePage() {
     if (priorityFilter) list = list.filter((d) => d.priority === priorityFilter);
 
     const now = new Date();
-    switch (tab) {
-      case "upcoming":
-        list = list.filter((d) => differenceInCalendarDays(new Date(d.due_date), now) >= 0);
-        break;
-      case "today":
-        list = list.filter((d) => differenceInCalendarDays(new Date(d.due_date), now) === 0);
-        break;
-      case "pinned":
-        list = list.filter((d) => d.pinned);
-        break;
-      case "overdue":
-        list = list.filter(
-          (d) => isPast(new Date(d.due_date)) && differenceInCalendarDays(new Date(d.due_date), now) < 0
-        );
-        break;
-      case "history":
-        list = list.filter((d) => d.edit_count > 0);
-        break;
+
+    if (tab === "deleted") {
+      list = list.filter((d) => d.deleted);
+    } else {
+      // Deleted items never show up in the normal working tabs, they
+      // only live in the Deleted tab (and remain in edit history).
+      list = list.filter((d) => !d.deleted);
+
+      switch (tab) {
+        case "upcoming":
+          list = list.filter((d) => differenceInCalendarDays(new Date(d.due_date), now) >= 0);
+          break;
+        case "today":
+          list = list.filter((d) => differenceInCalendarDays(new Date(d.due_date), now) === 0);
+          break;
+        case "pinned":
+          list = list.filter((d) => d.pinned);
+          break;
+        case "overdue":
+          list = list.filter(
+            (d) =>
+              isPast(new Date(d.due_date)) && differenceInCalendarDays(new Date(d.due_date), now) < 0
+          );
+          break;
+        case "history":
+          list = list.filter((d) => d.edit_count > 0);
+          break;
+      }
     }
 
     const sorted = [...list].sort((a, b) => {
@@ -140,16 +150,18 @@ export default function HomePage() {
 
   const counts = useMemo(() => {
     const now = new Date();
+    const active = deadlines.filter((d) => !d.deleted);
     return {
-      upcoming: deadlines.filter((d) => differenceInCalendarDays(new Date(d.due_date), now) >= 0)
+      upcoming: active.filter((d) => differenceInCalendarDays(new Date(d.due_date), now) >= 0)
         .length,
-      today: deadlines.filter((d) => differenceInCalendarDays(new Date(d.due_date), now) === 0)
+      today: active.filter((d) => differenceInCalendarDays(new Date(d.due_date), now) === 0)
         .length,
-      pinned: deadlines.filter((d) => d.pinned).length,
-      overdue: deadlines.filter(
+      pinned: active.filter((d) => d.pinned).length,
+      overdue: active.filter(
         (d) => isPast(new Date(d.due_date)) && differenceInCalendarDays(new Date(d.due_date), now) < 0
       ).length,
-      history: deadlines.filter((d) => d.edit_count > 0).length,
+      history: active.filter((d) => d.edit_count > 0).length,
+      deleted: deadlines.filter((d) => d.deleted).length,
     } as Record<TabKey, number>;
   }, [deadlines]);
 
@@ -189,6 +201,24 @@ export default function HomePage() {
     fetchDeadlines();
   }
 
+  async function handleDelete(d: Deadline) {
+    if (!userEmail) return;
+    await supabase
+      .from("deadlines")
+      .update({ deleted: true, deleted_by: userEmail })
+      .eq("id", d.id);
+    fetchDeadlines();
+  }
+
+  async function handleRestore(d: Deadline) {
+    if (!userEmail) return;
+    await supabase
+      .from("deadlines")
+      .update({ deleted: false, deleted_by: userEmail })
+      .eq("id", d.id);
+    fetchDeadlines();
+  }
+
   async function openHistory(d: Deadline) {
     setHistoryTarget(d);
     setHistoryLoading(true);
@@ -207,6 +237,7 @@ export default function HomePage() {
     pinned: "No pinned deadlines yet.",
     overdue: "No overdue deadlines. Nice.",
     history: "No edits have been made yet.",
+    deleted: "Nothing's been deleted — nice and clean.",
   };
 
   return (
@@ -248,6 +279,8 @@ export default function HomePage() {
             }}
             onTogglePin={handleTogglePin}
             onViewHistory={openHistory}
+            onDelete={handleDelete}
+            onRestore={handleRestore}
             emptyMessage={emptyMessages[tab]}
           />
         )}

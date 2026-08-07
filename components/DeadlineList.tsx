@@ -9,6 +9,8 @@ export default function DeadlineList({
   onEdit,
   onTogglePin,
   onViewHistory,
+  onDelete,
+  onRestore,
   emptyMessage,
 }: {
   deadlines: Deadline[];
@@ -16,6 +18,8 @@ export default function DeadlineList({
   onEdit: (d: Deadline) => void;
   onTogglePin: (d: Deadline) => void;
   onViewHistory: (d: Deadline) => void;
+  onDelete: (d: Deadline) => void;
+  onRestore: (d: Deadline) => void;
   emptyMessage: string;
 }) {
   if (deadlines.length === 0) {
@@ -36,6 +40,8 @@ export default function DeadlineList({
           onEdit={onEdit}
           onTogglePin={onTogglePin}
           onViewHistory={onViewHistory}
+          onDelete={onDelete}
+          onRestore={onRestore}
         />
       ))}
     </div>

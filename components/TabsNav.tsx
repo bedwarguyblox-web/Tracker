@@ -7,6 +7,7 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: "today", label: "Today" },
   { key: "pinned", label: "Pinned" },
   { key: "overdue", label: "Overdue" },
+  { key: "deleted", label: "Deleted" },
   { key: "history", label: "History" },
 ];
 

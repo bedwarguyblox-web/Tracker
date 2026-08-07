@@ -3,8 +3,9 @@
 import { differenceInCalendarDays, isPast } from "date-fns";
 import type { Deadline } from "@/lib/types";
 
-export default function DashboardStats({ deadlines }: { deadlines: Deadline[] }) {
+export default function DashboardStats({ deadlines: allDeadlines }: { deadlines: Deadline[] }) {
   const now = new Date();
+  const deadlines = allDeadlines.filter((d) => !d.deleted);
 
   const upcoming = deadlines.filter((d) => {
     const days = differenceInCalendarDays(new Date(d.due_date), now);

@@ -14,6 +14,9 @@ export interface Deadline {
   last_edited_by: string | null;
   last_edited_at: string | null;
   edit_count: number;
+  deleted: boolean;
+  deleted_by: string | null;
+  deleted_at: string | null;
 }
 
 export interface DeadlineHistoryEntry {
@@ -33,6 +36,6 @@ export type UrgencyStage =
   | "yellow" // <= 7 days
   | "normal";
 
-export type TabKey = "upcoming" | "today" | "pinned" | "overdue" | "history";
+export type TabKey = "upcoming" | "today" | "pinned" | "overdue" | "deleted" | "history";
 
 export type SortKey = "closest" | "furthest" | "recent" | "subject";

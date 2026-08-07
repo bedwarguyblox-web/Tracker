@@ -10,12 +10,16 @@ export default function DeadlineCard({
   onEdit,
   onTogglePin,
   onViewHistory,
+  onDelete,
+  onRestore,
 }: {
   deadline: Deadline;
   canEdit: boolean;
   onEdit: (d: Deadline) => void;
   onTogglePin: (d: Deadline) => void;
   onViewHistory: (d: Deadline) => void;
+  onDelete: (d: Deadline) => void;
+  onRestore: (d: Deadline) => void;
 }) {
   const stage = getUrgencyStage(deadline.due_date);
   const styles = getStageStyles(stage);
@@ -31,6 +35,12 @@ export default function DeadlineCard({
       <div className={`w-1.5 shrink-0 ${styles.edge}`} aria-hidden />
 
       <div className="flex-1 p-4 sm:p-5">
+        {deadline.deleted && (
+          <div className="mb-3 rounded-lg bg-stamp-overdue/10 border border-stamp-overdue/30 px-3 py-2 text-xs text-stamp-overdue font-mono">
+            Deleted by {deadline.deleted_by || "unknown"}
+            {deadline.deleted_at && ` · ${new Date(deadline.deleted_at).toLocaleString()}`}
+          </div>
+        )}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
@@ -99,7 +109,18 @@ export default function DeadlineCard({
             )}
           </div>
 
-          {canEdit && (
+          {canEdit && deadline.deleted && (
+            <div className="flex gap-2">
+              <button
+                onClick={() => onRestore(deadline)}
+                className="text-xs rounded-full bg-folder-700 text-white px-3 py-1 hover:bg-folder-800"
+              >
+                Restore
+              </button>
+            </div>
+          )}
+
+          {canEdit && !deadline.deleted && (
             <div className="flex gap-2">
               <button
                 disabled={pinBusy}
@@ -117,6 +138,20 @@ export default function DeadlineCard({
                 className="text-xs rounded-full bg-folder-700 text-white px-3 py-1 hover:bg-folder-800"
               >
                 Edit
+              </button>
+              <button
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      `Delete "${deadline.activity}"? This can be undone from the Deleted tab.`
+                    )
+                  ) {
+                    onDelete(deadline);
+                  }
+                }}
+                className="text-xs rounded-full border border-stamp-red/40 text-stamp-red px-3 py-1 hover:bg-stamp-red/10"
+              >
+                Delete
               </button>
             </div>
           )}

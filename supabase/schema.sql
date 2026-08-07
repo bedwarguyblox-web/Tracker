@@ -21,11 +21,15 @@ create table if not exists public.deadlines (
   created_at timestamptz not null default now(),
   last_edited_by text,             -- email of last editor
   last_edited_at timestamptz,
-  edit_count integer not null default 0
+  edit_count integer not null default 0,
+  deleted boolean not null default false,
+  deleted_by text,
+  deleted_at timestamptz
 );
 
 create index if not exists deadlines_due_date_idx on public.deadlines (due_date);
 create index if not exists deadlines_pinned_idx on public.deadlines (pinned);
+create index if not exists deadlines_deleted_idx on public.deadlines (deleted);
 
 -- ---------------------------------------------------------------------
 -- Table: deadline_history
@@ -55,7 +59,7 @@ language plpgsql
 security definer
 as $$
 declare
-  editor text := coalesce(new.last_edited_by, auth.jwt() ->> 'email', 'unknown');
+  editor text := coalesce(new.last_edited_by, new.deleted_by, auth.jwt() ->> 'email', 'unknown');
 begin
   if new.subject is distinct from old.subject then
     insert into public.deadline_history (deadline_id, field_name, previous_value, new_value, editor_email)
@@ -90,6 +94,17 @@ begin
   if new.pinned is distinct from old.pinned then
     insert into public.deadline_history (deadline_id, field_name, previous_value, new_value, editor_email)
     values (old.id, 'pinned', old.pinned::text, new.pinned::text, editor);
+  end if;
+
+  if new.deleted is distinct from old.deleted then
+    insert into public.deadline_history (deadline_id, field_name, previous_value, new_value, editor_email)
+    values (
+      old.id,
+      'deleted',
+      old.deleted::text,
+      new.deleted::text,
+      coalesce(new.deleted_by, editor)
+    );
   end if;
 
   new.last_edited_at := now();
