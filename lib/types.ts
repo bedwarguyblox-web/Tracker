@@ -17,6 +17,22 @@ export interface Deadline {
   deleted: boolean;
   deleted_by: string | null;
   deleted_at: string | null;
+  section_id: string;
+}
+
+export interface Section {
+  id: string;
+  name: string;
+  join_code: string;
+  created_by: string;
+  created_at: string;
+}
+
+export interface SectionMember {
+  id: string;
+  section_id: string;
+  user_email: string;
+  joined_at: string;
 }
 
 export interface DeadlineHistoryEntry {

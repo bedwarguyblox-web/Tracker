@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { differenceInCalendarDays, isPast } from "date-fns";
 import { createClient } from "@/lib/supabase/client";
-import type { Deadline, DeadlineHistoryEntry, TabKey, SortKey } from "@/lib/types";
+import type { Deadline, DeadlineHistoryEntry, TabKey, SortKey, Section } from "@/lib/types";
 import { isAllowedEmail } from "@/lib/utils";
 import Header from "@/components/Header";
 import DashboardStats from "@/components/DashboardStats";
@@ -12,13 +12,93 @@ import SearchFilterBar from "@/components/SearchFilterBar";
 import DeadlineList from "@/components/DeadlineList";
 import AddDeadlineModal, { DeadlineFormValues } from "@/components/AddDeadlineModal";
 import HistoryModal from "@/components/HistoryModal";
+import SectionDashboard, { SectionWithCount } from "@/components/SectionDashboard";
+import CreateSectionModal from "@/components/CreateSectionModal";
+import JoinSectionModal from "@/components/JoinSectionModal";
+import SectionMembersList from "@/components/SectionMembersList";
 import { requestNotificationPermission, startNotificationLoop } from "@/lib/notifications";
+
+type ViewKey = "dashboard" | "section";
 
 export default function HomePage() {
   const supabase = useMemo(() => createClient(), []);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const canEdit = isAllowedEmail(userEmail);
+
+  // ---- Section navigation ----
+  const [view, setView] = useState<ViewKey>("dashboard");
+  const [activeSection, setActiveSection] = useState<Section | null>(null);
+  const activeSectionId = activeSection?.id ?? null;
+
+  const [mySections, setMySections] = useState<SectionWithCount[]>([]);
+  const [sectionsLoading, setSectionsLoading] = useState(true);
+
+  const [createSectionOpen, setCreateSectionOpen] = useState(false);
+  const [joinSectionOpen, setJoinSectionOpen] = useState(false);
+  const [membersOpen, setMembersOpen] = useState(false);
+
+  const fetchMySections = useCallback(async () => {
+    if (!userEmail) {
+      setMySections([]);
+      setSectionsLoading(false);
+      return;
+    }
+    setSectionsLoading(true);
+
+    const { data: memberships } = await supabase
+      .from("section_members")
+      .select("section_id, sections(*)")
+      .eq("user_email", userEmail);
+
+    const sections: Section[] = (memberships || [])
+      .map((m: any) => m.sections)
+      .filter(Boolean);
+
+    if (sections.length === 0) {
+      setMySections([]);
+      setSectionsLoading(false);
+      return;
+    }
+
+    const ids = sections.map((s) => s.id);
+    const { data: sectionDeadlines } = await supabase
+      .from("deadlines")
+      .select("section_id, due_date")
+      .in("section_id", ids)
+      .eq("deleted", false);
+
+    const now = new Date();
+    const countsBySection: Record<string, number> = {};
+    for (const d of sectionDeadlines || []) {
+      const days = differenceInCalendarDays(new Date(d.due_date), now);
+      if (days >= 0 && days <= 7) {
+        countsBySection[d.section_id] = (countsBySection[d.section_id] || 0) + 1;
+      }
+    }
+
+    setMySections(
+      sections.map((s) => ({ ...s, dueSoonCount: countsBySection[s.id] || 0 }))
+    );
+    setSectionsLoading(false);
+  }, [supabase, userEmail]);
+
+  useEffect(() => {
+    fetchMySections();
+  }, [fetchMySections]);
+
+  function goToDashboard() {
+    setView("dashboard");
+    setActiveSection(null);
+  }
+
+  function goToSection(section: Section) {
+    setActiveSection(section);
+    setView("section");
+  }
+
+  // ---- Section-scoped deadlines (existing app body) ----
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   const [tab, setTab] = useState<TabKey>("upcoming");
   const [query, setQuery] = useState("");
@@ -33,25 +113,37 @@ export default function HomePage() {
   const [historyEntries, setHistoryEntries] = useState<DeadlineHistoryEntry[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
 
-  const canEdit = isAllowedEmail(userEmail);
-
   const fetchDeadlines = useCallback(async () => {
+    if (!activeSectionId) {
+      setDeadlines([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
     const { data, error } = await supabase
       .from("deadlines")
       .select("*")
+      .eq("section_id", activeSectionId)
       .order("due_date", { ascending: true });
     if (!error && data) setDeadlines(data as Deadline[]);
     setLoading(false);
-  }, [supabase]);
+  }, [supabase, activeSectionId]);
 
   useEffect(() => {
+    if (view !== "section" || !activeSectionId) return;
+
     fetchDeadlines();
 
     const channel = supabase
-      .channel("deadlines-realtime")
+      .channel(`deadlines-realtime-${activeSectionId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "deadlines" },
+        {
+          event: "*",
+          schema: "public",
+          table: "deadlines",
+          filter: `section_id=eq.${activeSectionId}`,
+        },
         () => fetchDeadlines()
       )
       .subscribe();
@@ -59,15 +151,18 @@ export default function HomePage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchDeadlines, supabase]);
+  }, [view, activeSectionId, fetchDeadlines, supabase]);
 
   // Notifications: ask for permission on first meaningful interaction,
   // then re-check milestones periodically while the tab is open.
+  // Scoped to whatever deadlines are currently loaded for the active
+  // section — never fires for sections the user isn't looking at.
   useEffect(() => {
+    if (view !== "section" || !activeSectionId) return;
     const stop = startNotificationLoop(() => deadlines);
     return stop;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [deadlines.length]);
+  }, [view, activeSectionId, deadlines.length]);
 
   async function ensureNotificationPermission() {
     await requestNotificationPermission();
@@ -166,7 +261,7 @@ export default function HomePage() {
   }, [deadlines]);
 
   async function handleCreateOrUpdate(values: DeadlineFormValues) {
-    if (!userEmail) return;
+    if (!userEmail || !activeSectionId) return;
     const payload = {
       subject: values.subject.trim(),
       activity: values.activity.trim(),
@@ -186,6 +281,7 @@ export default function HomePage() {
       await supabase.from("deadlines").insert({
         ...payload,
         created_by: userEmail,
+        section_id: activeSectionId,
       });
     }
     setEditing(null);
@@ -243,52 +339,70 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       <div className="mx-auto max-w-3xl px-4 sm:px-6">
-        <Header onUserChange={setUserEmail} />
+        <Header
+          onUserChange={setUserEmail}
+          sectionName={view === "section" ? activeSection?.name : null}
+          onBack={view === "section" ? goToDashboard : undefined}
+          onShowMembers={view === "section" ? () => setMembersOpen(true) : undefined}
+        />
 
-        <div className="mb-5">
-          <DashboardStats deadlines={deadlines} />
-        </div>
-
-        <div className="mb-4">
-          <TabsNav active={tab} onChange={setTab} counts={counts} />
-        </div>
-
-        <div className="mb-5">
-          <SearchFilterBar
-            query={query}
-            onQuery={setQuery}
-            subjects={subjects}
-            subjectFilter={subjectFilter}
-            onSubjectFilter={setSubjectFilter}
-            priorityFilter={priorityFilter}
-            onPriorityFilter={setPriorityFilter}
-            sort={sort}
-            onSort={setSort}
+        {view === "dashboard" ? (
+          <SectionDashboard
+            sections={mySections}
+            loading={sectionsLoading}
+            canCreate={canEdit}
+            onSelectSection={goToSection}
+            onCreateClick={() => setCreateSectionOpen(true)}
+            onJoinClick={() => setJoinSectionOpen(true)}
           />
-        </div>
-
-        {loading ? (
-          <p className="text-sm text-folder-500 text-center py-14">Loading deadlines…</p>
         ) : (
-          <DeadlineList
-            deadlines={filtered}
-            canEdit={canEdit}
-            onEdit={(d) => {
-              setEditing(d);
-              setModalOpen(true);
-            }}
-            onTogglePin={handleTogglePin}
-            onViewHistory={openHistory}
-            onDelete={handleDelete}
-            onRestore={handleRestore}
-            emptyMessage={emptyMessages[tab]}
-          />
+          <>
+            <div className="mb-5">
+              <DashboardStats deadlines={deadlines} />
+            </div>
+
+            <div className="mb-4">
+              <TabsNav active={tab} onChange={setTab} counts={counts} />
+            </div>
+
+            <div className="mb-5">
+              <SearchFilterBar
+                query={query}
+                onQuery={setQuery}
+                subjects={subjects}
+                subjectFilter={subjectFilter}
+                onSubjectFilter={setSubjectFilter}
+                priorityFilter={priorityFilter}
+                onPriorityFilter={setPriorityFilter}
+                sort={sort}
+                onSort={setSort}
+              />
+            </div>
+
+            {loading ? (
+              <p className="text-sm text-folder-500 text-center py-14">Loading deadlines…</p>
+            ) : (
+              <DeadlineList
+                deadlines={filtered}
+                canEdit={canEdit}
+                onEdit={(d) => {
+                  setEditing(d);
+                  setModalOpen(true);
+                }}
+                onTogglePin={handleTogglePin}
+                onViewHistory={openHistory}
+                onDelete={handleDelete}
+                onRestore={handleRestore}
+                emptyMessage={emptyMessages[tab]}
+              />
+            )}
+          </>
         )}
 
         <div className="h-24" />
       </div>
 
-      {canEdit && (
+      {view === "section" && canEdit && (
         <button
           onClick={async () => {
             await ensureNotificationPermission();
@@ -317,6 +431,33 @@ export default function HomePage() {
         entries={historyEntries}
         loading={historyLoading}
         onClose={() => setHistoryTarget(null)}
+      />
+
+      <CreateSectionModal
+        open={createSectionOpen}
+        onClose={() => setCreateSectionOpen(false)}
+        onCreated={(section) => {
+          fetchMySections();
+          goToSection(section);
+        }}
+        userEmail={userEmail}
+      />
+
+      <JoinSectionModal
+        open={joinSectionOpen}
+        onClose={() => setJoinSectionOpen(false)}
+        onJoined={(section) => {
+          fetchMySections();
+          goToSection(section);
+        }}
+        userEmail={userEmail}
+      />
+
+      <SectionMembersList
+        open={membersOpen}
+        onClose={() => setMembersOpen(false)}
+        activeSectionId={activeSectionId}
+        sectionName={activeSection?.name}
       />
     </div>
   );
