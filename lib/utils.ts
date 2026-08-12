@@ -99,3 +99,27 @@ export function isAllowedEmail(email: string | null | undefined): boolean {
   const domain = process.env.NEXT_PUBLIC_ALLOWED_EMAIL_DOMAIN || "mrc.pshs.edu.ph";
   return email.toLowerCase().endsWith(`@${domain.toLowerCase()}`);
 }
+
+/**
+ * Deterministic color tag per subject, so "Physics" is always the same
+ * color everywhere it appears — inspired by category-colored avatars,
+ * but kept muted/pastel to stay consistent with the ledger aesthetic.
+ */
+const SUBJECT_PALETTE = [
+  "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300",
+  "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
+  "bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300",
+  "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300",
+  "bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-900/30 dark:text-fuchsia-300",
+  "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300",
+  "bg-lime-100 text-lime-800 dark:bg-lime-900/30 dark:text-lime-300",
+  "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300",
+];
+
+export function subjectTagClass(subject: string): string {
+  let hash = 0;
+  for (let i = 0; i < subject.length; i++) {
+    hash = (hash * 31 + subject.charCodeAt(i)) >>> 0;
+  }
+  return SUBJECT_PALETTE[hash % SUBJECT_PALETTE.length];
+}
