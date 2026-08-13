@@ -1,5 +1,6 @@
 "use client";
 
+import { Pin, Check, Link2, X, History } from "lucide-react";
 import type { Deadline } from "@/lib/types";
 import {
   getUrgencyStage,
@@ -66,9 +67,9 @@ export default function DeadlineDetailModal({
             <button
               onClick={onClose}
               aria-label="Close"
-              className="shrink-0 text-folder-400 hover:text-folder-700 dark:hover:text-folder-200 text-xl leading-none px-1"
+              className="shrink-0 text-folder-400 hover:text-folder-700 dark:hover:text-folder-200 p-1 rounded-full hover:bg-folder-50 dark:hover:bg-folder-900"
             >
-              ×
+              <X size={20} />
             </button>
           </div>
 
@@ -84,13 +85,19 @@ export default function DeadlineDetailModal({
               <span className="font-semibold">{getRemainingLabel(deadline.due_date)}</span>
             </div>
             {deadline.pinned && (
-              <span className="text-sm text-stamp-yellow" title="Pinned">
-                📌 Pinned
+              <span
+                className="inline-flex items-center gap-1 text-sm text-stamp-yellow"
+                title="Pinned"
+              >
+                <Pin size={14} /> Pinned
               </span>
             )}
             {deadline.completed && (
-              <span className="text-sm text-folder-500" title="Done">
-                ✓ Done
+              <span
+                className="inline-flex items-center gap-1 text-sm text-folder-500"
+                title="Done"
+              >
+                <Check size={14} /> Done
               </span>
             )}
             {deadline.priority && deadline.priority !== "normal" && (
@@ -117,9 +124,9 @@ export default function DeadlineDetailModal({
               href={deadline.attachment_url}
               target="_blank"
               rel="noreferrer"
-              className="mt-4 inline-block text-sm underline text-folder-600 dark:text-folder-300 break-all"
+              className="mt-4 inline-flex items-center gap-1.5 text-sm underline text-folder-600 dark:text-folder-300 break-all"
             >
-              🔗 {deadline.attachment_url}
+              <Link2 size={14} className="shrink-0" /> {deadline.attachment_url}
             </a>
           )}
 
@@ -131,9 +138,9 @@ export default function DeadlineDetailModal({
             {deadline.edit_count > 0 && (
               <button
                 onClick={() => onViewHistory(deadline)}
-                className="underline decoration-dotted hover:text-folder-700 dark:hover:text-folder-200"
+                className="inline-flex items-center gap-1 underline decoration-dotted hover:text-folder-700 dark:hover:text-folder-200"
               >
-                View edit history (×{deadline.edit_count})
+                <History size={12} /> View edit history ({deadline.edit_count})
               </button>
             )}
           </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { X, Check } from "lucide-react";
 import { requestNotificationPermission } from "@/lib/notifications";
 
 export default function SettingsModal({
@@ -60,9 +61,9 @@ export default function SettingsModal({
           <button
             onClick={onClose}
             aria-label="Close"
-            className="text-folder-400 hover:text-folder-700 dark:hover:text-folder-200 text-xl leading-none px-1"
+            className="text-folder-400 hover:text-folder-700 dark:hover:text-folder-200 p-1 rounded-full hover:bg-folder-50 dark:hover:bg-folder-900"
           >
-            ×
+            <X size={20} />
           </button>
         </div>
 
@@ -135,8 +136,9 @@ export default function SettingsModal({
             </h3>
             <div className="rounded-xl bg-folder-50 dark:bg-folder-900/40 p-4">
               {notifPermission === "granted" && (
-                <p className="text-sm text-stamp-normal font-medium">
-                  ✓ Enabled — you'll get reminders at 3, 2, 1 days and on the due date.
+                <p className="flex items-start gap-1.5 text-sm text-stamp-normal font-medium">
+                  <Check size={16} className="shrink-0 mt-0.5" />
+                  <span>Enabled — you'll get reminders at 3, 2, 1 days and on the due date.</span>
                 </p>
               )}
               {notifPermission === "denied" && (

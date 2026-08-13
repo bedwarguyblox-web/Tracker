@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Pin } from "lucide-react";
 import type { Deadline } from "@/lib/types";
 import {
   getUrgencyStage,
@@ -90,8 +91,8 @@ export default function DeadlineCard({
               {deadline.subject}
             </span>
             {deadline.pinned && (
-              <span className="text-xs text-stamp-yellow shrink-0" title="Pinned">
-                📌
+              <span className="text-stamp-yellow shrink-0" title="Pinned">
+                <Pin size={12} fill="currentColor" />
               </span>
             )}
             {deadline.deleted && (

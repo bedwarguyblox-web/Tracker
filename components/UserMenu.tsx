@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Settings, LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { isAllowedEmail } from "@/lib/utils";
 import SettingsModal from "./SettingsModal";
@@ -169,14 +170,14 @@ export default function UserMenu({
               }}
               className="w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-folder-50 dark:hover:bg-folder-900/40 transition-colors"
             >
-              <span aria-hidden>⚙️</span> Settings
+              <Settings size={16} /> Settings
             </button>
 
             <button
               onClick={signOut}
               className="w-full flex items-center gap-3 px-4 py-3 text-sm text-stamp-red hover:bg-stamp-red/10 transition-colors"
             >
-              <span aria-hidden>🚪</span> Sign out
+              <LogOut size={16} /> Sign out
             </button>
           </div>
         </div>
