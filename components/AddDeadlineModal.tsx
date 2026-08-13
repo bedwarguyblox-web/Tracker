@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Clock } from "lucide-react";
 import type { Deadline, Priority } from "@/lib/types";
 
 export interface DeadlineFormValues {
   subject: string;
   activity: string;
   description: string;
-  due_date: string; // datetime-local value
+  due_date: string; // datetime-local value, or date-only value when has_time is false
+  has_time: boolean;
   priority: Priority;
   attachment_url: string;
   pinned: boolean;
@@ -31,6 +33,7 @@ export default function AddDeadlineModal({
     activity: "",
     description: "",
     due_date: "",
+    has_time: true,
     priority: "normal",
     attachment_url: "",
     pinned: false,
@@ -44,7 +47,10 @@ export default function AddDeadlineModal({
         subject: editing.subject,
         activity: editing.activity,
         description: editing.description || "",
-        due_date: toLocalInputValue(editing.due_date),
+        due_date: editing.has_time
+          ? toLocalInputValue(editing.due_date)
+          : toLocalInputValue(editing.due_date).slice(0, 10),
+        has_time: editing.has_time,
         priority: editing.priority,
         attachment_url: editing.attachment_url || "",
         pinned: editing.pinned,
@@ -55,6 +61,7 @@ export default function AddDeadlineModal({
         activity: "",
         description: "",
         due_date: "",
+        has_time: true,
         priority: "normal",
         attachment_url: "",
         pinned: false,
@@ -64,6 +71,24 @@ export default function AddDeadlineModal({
   }, [editing, open]);
 
   if (!open) return null;
+
+  function toggleHasTime() {
+    setValues((v) => {
+      const nextHasTime = !v.has_time;
+      if (!nextHasTime) {
+        // Switching to "no specific time" — keep just the date part.
+        return { ...v, has_time: false, due_date: v.due_date ? v.due_date.slice(0, 10) : "" };
+      }
+      // Switching back to a specific time — if we only have a bare
+      // date, give it a sensible default time to edit from.
+      const hasFullDatetime = v.due_date.includes("T");
+      return {
+        ...v,
+        has_time: true,
+        due_date: hasFullDatetime ? v.due_date : v.due_date ? `${v.due_date}T17:00` : "",
+      };
+    });
+  }
 
   function validate(): boolean {
     const e: Record<string, string> = {};
@@ -93,7 +118,16 @@ export default function AddDeadlineModal({
       const existingMatch = subjects.find(
         (s) => s.toLowerCase() === cleanedSubject.toLowerCase()
       );
-      await onSubmit({ ...values, subject: existingMatch || cleanedSubject });
+
+      // No specific time: store as end-of-day so existing day-based
+      // urgency/sorting logic keeps working unchanged.
+      const finalDueDate = values.has_time ? values.due_date : `${values.due_date}T23:59`;
+
+      await onSubmit({
+        ...values,
+        subject: existingMatch || cleanedSubject,
+        due_date: finalDueDate,
+      });
       onClose();
     } finally {
       setSubmitting(false);
@@ -102,13 +136,13 @@ export default function AddDeadlineModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-ink/40 dark:bg-black/60 backdrop-blur-sm p-0 sm:p-4"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-ink/40 dark:bg-black/60 backdrop-blur-sm animate-fade-in p-0 sm:p-4"
       onClick={onClose}
     >
       <form
         onClick={(e) => e.stopPropagation()}
         onSubmit={handleSubmit}
-        className="w-full sm:max-w-lg max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-card bg-surface dark:bg-surface-dark border border-folder-100 dark:border-folder-800 shadow-cardHover p-6"
+        className="animate-sheet-up w-full sm:max-w-lg max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-card bg-surface dark:bg-surface-dark border border-folder-100 dark:border-folder-800 shadow-cardHover p-6"
       >
         <h2 className="font-display text-xl font-semibold mb-4">
           {editing ? "Edit deadline" : "Add a deadline"}
@@ -116,12 +150,28 @@ export default function AddDeadlineModal({
 
         <div className="space-y-4">
           <Field label="Due date" error={errors.due_date}>
-            <input
-              type="datetime-local"
-              value={values.due_date}
-              onChange={(e) => setValues((v) => ({ ...v, due_date: e.target.value }))}
-              className={inputClass}
-            />
+            <div className="flex gap-2">
+              <input
+                type={values.has_time ? "datetime-local" : "date"}
+                value={values.due_date}
+                onChange={(e) => setValues((v) => ({ ...v, due_date: e.target.value }))}
+                className={`${inputClass} flex-1`}
+              />
+              <button
+                type="button"
+                onClick={toggleHasTime}
+                title={values.has_time ? "Switch to no specific time" : "A specific time is set"}
+                aria-pressed={!values.has_time}
+                className={`shrink-0 inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors ${
+                  !values.has_time
+                    ? "bg-folder-500 border-folder-500 text-white"
+                    : "border-folder-200 dark:border-folder-700 text-folder-500 hover:bg-folder-50 dark:hover:bg-folder-900"
+                }`}
+              >
+                <Clock size={14} />
+                No time
+              </button>
+            </div>
           </Field>
 
           <Field label="Subject" error={errors.subject}>
@@ -205,7 +255,7 @@ export default function AddDeadlineModal({
           <button
             type="submit"
             disabled={submitting}
-            className="rounded-full px-4 py-2 text-sm bg-folder-700 text-white hover:bg-folder-800 disabled:opacity-60"
+            className="rounded-full px-4 py-2 text-sm bg-folder-500 text-white hover:bg-folder-600 disabled:opacity-60 transition-colors"
           >
             {submitting ? "Saving…" : editing ? "Save changes" : "Add deadline"}
           </button>

@@ -53,7 +53,7 @@ export function getStageStyles(stage: UrgencyStage) {
 }
 
 /** Human label like "3 days left", "Due today", "8 hours left", "Overdue by 2 days" */
-export function getRemainingLabel(dueDate: string | Date): string {
+export function getRemainingLabel(dueDate: string | Date, hasTime: boolean = true): string {
   const due = new Date(dueDate);
   const now = new Date();
 
@@ -73,6 +73,11 @@ export function getRemainingLabel(dueDate: string | Date): string {
   const daysLeft = differenceInCalendarDays(due, now);
 
   if (daysLeft === 0) {
+    // No specific time was set (due_date is just an end-of-day
+    // placeholder) — an hour/minute countdown would be meaningless,
+    // so just say it's due today.
+    if (!hasTime) return "Due today";
+
     const hoursLeft = differenceInHours(due, now);
     if (hoursLeft >= 1) {
       return hoursLeft === 1 ? "1 hour left" : `${hoursLeft} hours left`;
@@ -84,14 +89,16 @@ export function getRemainingLabel(dueDate: string | Date): string {
   return daysLeft === 1 ? "1 day left" : `${daysLeft} days left`;
 }
 
-export function formatDueDate(dueDate: string | Date): string {
+export function formatDueDate(dueDate: string | Date, hasTime: boolean = true): string {
   const due = new Date(dueDate);
-  return due.toLocaleDateString(undefined, {
+  const datePart = due.toLocaleDateString(undefined, {
     weekday: "short",
     month: "short",
     day: "numeric",
     year: "numeric",
-  }) + " · " + due.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  });
+  if (!hasTime) return datePart;
+  return datePart + " · " + due.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
 }
 
 export function isAllowedEmail(email: string | null | undefined): boolean {

@@ -20,6 +20,7 @@ export interface Deadline {
   completed: boolean;
   completed_by: string | null;
   completed_at: string | null;
+  has_time: boolean;
   section_id: string;
 }
 

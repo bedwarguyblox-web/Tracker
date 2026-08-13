@@ -94,3 +94,22 @@ export function startNotificationLoop(getDeadlines: () => Deadline[]) {
   const interval = setInterval(() => checkAndNotify(getDeadlines()), 1000 * 60 * 30); // every 30 min
   return () => clearInterval(interval);
 }
+
+/** Fires an immediate one-off notification so someone can confirm it actually works. */
+export function sendTestNotification(): boolean {
+  if (!("Notification" in window) || Notification.permission !== "granted") return false;
+  fireNotification("Test notification", {
+    body: "If you can see this, deadline reminders are working.",
+    tag: "test-notification",
+  });
+  return true;
+}
+
+/**
+ * Clears the "already notified today" log, so previously-dismissed
+ * reminders are eligible to fire again on the next check. Doesn't
+ * touch any deadline data — purely a local notification-state reset.
+ */
+export function clearNotificationLog() {
+  localStorage.removeItem(STORAGE_KEY);
+}
