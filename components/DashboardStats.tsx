@@ -39,7 +39,7 @@ export default function DashboardStats({ deadlines: allDeadlines }: { deadlines:
       {stats.map((s) => (
         <div
           key={s.label}
-          className="rounded-card border border-folder-100 dark:border-folder-800 bg-white/60 dark:bg-white/[0.03] px-4 py-3 shadow-card"
+          className="rounded-card border border-folder-100 dark:border-folder-800 bg-surface dark:bg-surface-dark px-4 py-3 shadow-card"
         >
           <div className={`font-display text-2xl font-semibold ${s.tone}`}>{s.value}</div>
           <div className="text-xs uppercase tracking-wide text-folder-500 dark:text-folder-400 mt-0.5">

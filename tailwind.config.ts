@@ -6,43 +6,58 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Discord-inspired: light bg is a soft neutral gray (not stark
+        // white), dark bg is Discord's deep charcoal, not pure black.
         paper: {
-          DEFAULT: "#FBFAF5",
-          dark: "#12161B",
+          DEFAULT: "#F2F3F5",
+          dark: "#1E1F22",
         },
         ink: {
-          DEFAULT: "#1E2A24",
-          dark: "#E9EDE9",
+          DEFAULT: "#060607",
+          dark: "#F2F3F5",
         },
+        // "folder" now carries Discord's blurple brand ramp — every
+        // primary button / accent in the app pulls from this token,
+        // so retinting it here reskins the whole app at once.
         folder: {
-          50: "#F2F6F2",
-          100: "#DFE9E0",
-          200: "#B9CDBB",
-          300: "#8FAE92",
-          400: "#5F8A65",
-          500: "#3E6B47",
-          600: "#2C5237",
-          700: "#1F4B3F",
-          800: "#173A32",
-          900: "#102921",
+          50: "#EEF0FF",
+          100: "#E0E3FF",
+          200: "#C7CCFB",
+          300: "#A3AAF7",
+          400: "#7F87F2",
+          500: "#5865F2",
+          600: "#4752C4",
+          700: "#3C45A5",
+          800: "#2F3686",
+          900: "#232761",
         },
+        // Urgency semantics stay meaningfully distinct from each
+        // other, retinted to sit closer to Discord's status colors.
         stamp: {
-          normal: "#3E6B47",
-          yellow: "#B8862E",
-          orange: "#C2661C",
-          red: "#B23B2E",
-          overdue: "#6B6560",
+          normal: "#23A55A",
+          yellow: "#F0B232",
+          orange: "#F5821F",
+          red: "#F23F43",
+          overdue: "#87383B",
         },
-        parchment: "#F1EADA",
+        parchment: "#EEF0FF",
+        // Card surfaces one step up from the page background — this
+        // is the piece the old cream/green theme was missing: real
+        // surface layering like Discord's bg-primary/secondary/tertiary.
+        surface: {
+          DEFAULT: "#FFFFFF",
+          dark: "#2B2D31",
+        },
+        online: "#23A55A",
       },
       fontFamily: {
-        display: ["'Fraunces'", "serif"],
+        display: ["'Baloo 2'", "system-ui", "sans-serif"],
         body: ["'IBM Plex Sans'", "system-ui", "sans-serif"],
         mono: ["'IBM Plex Mono'", "monospace"],
       },
       boxShadow: {
-        card: "0 1px 2px rgba(30,42,36,0.06), 0 4px 14px rgba(30,42,36,0.06)",
-        cardHover: "0 2px 6px rgba(30,42,36,0.10), 0 10px 24px rgba(30,42,36,0.10)",
+        card: "0 1px 2px rgba(0,0,0,0.08), 0 4px 14px rgba(0,0,0,0.06)",
+        cardHover: "0 2px 6px rgba(0,0,0,0.12), 0 10px 24px rgba(0,0,0,0.10)",
       },
       borderRadius: {
         card: "14px",

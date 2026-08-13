@@ -36,7 +36,7 @@ export default function DeadlineCard({
       <button
         type="button"
         onClick={() => setDetailOpen(true)}
-        className={`w-full text-left flex rounded-card border border-folder-100 dark:border-folder-800 bg-white/70 dark:bg-white/[0.03] shadow-card hover:shadow-cardHover active:scale-[0.99] transition-all overflow-hidden ${
+        className={`w-full text-left flex rounded-card border border-folder-100 dark:border-folder-800 bg-surface dark:bg-surface-dark shadow-card hover:shadow-cardHover active:scale-[0.99] transition-all overflow-hidden ${
           deadline.pinned ? "ring-1 ring-stamp-yellow/40" : ""
         }`}
       >

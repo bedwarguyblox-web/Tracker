@@ -94,7 +94,7 @@ export default function CreateSectionModal({
       <form
         onClick={(e) => e.stopPropagation()}
         onSubmit={handleSubmit}
-        className="w-full sm:max-w-lg max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-card bg-paper dark:bg-[#171C22] border border-folder-100 dark:border-folder-800 shadow-cardHover p-6"
+        className="w-full sm:max-w-lg max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-card bg-surface dark:bg-surface-dark border border-folder-100 dark:border-folder-800 shadow-cardHover p-6"
       >
         <h2 className="font-display text-xl font-semibold mb-4">Create a section</h2>
 

@@ -61,7 +61,7 @@ export default function SectionDashboard({
             <button
               key={s.id}
               onClick={() => onSelectSection(s)}
-              className="text-left rounded-card border border-folder-100 dark:border-folder-800 bg-white/70 dark:bg-white/[0.03] shadow-card hover:shadow-cardHover transition-shadow p-4 sm:p-5"
+              className="text-left rounded-card border border-folder-100 dark:border-folder-800 bg-surface dark:bg-surface-dark shadow-card hover:shadow-cardHover transition-shadow p-4 sm:p-5"
             >
               <h3 className="font-display text-lg font-semibold leading-snug truncate">
                 {s.name}

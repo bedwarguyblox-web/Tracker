@@ -1,7 +1,6 @@
 "use client";
 
-import AuthButton from "./AuthButton";
-import ThemeToggle from "./ThemeToggle";
+import UserMenu from "./UserMenu";
 
 export default function Header({
   onUserChange,
@@ -51,8 +50,7 @@ export default function Header({
             Members
           </button>
         )}
-        <ThemeToggle />
-        <AuthButton onUserChange={onUserChange} />
+        <UserMenu onUserChange={onUserChange} />
       </div>
     </header>
   );

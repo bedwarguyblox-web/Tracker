@@ -38,7 +38,7 @@ export default function DeadlineDetailModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full sm:max-w-lg max-h-[88vh] overflow-y-auto rounded-t-2xl sm:rounded-card bg-paper dark:bg-[#171C22] border border-folder-100 dark:border-folder-800 shadow-cardHover"
+        className="w-full sm:max-w-lg max-h-[88vh] overflow-y-auto rounded-t-2xl sm:rounded-card bg-surface dark:bg-surface-dark border border-folder-100 dark:border-folder-800 shadow-cardHover"
       >
         {/* drag-handle affordance, purely visual, hints "this is a sheet" */}
         <div className="flex justify-center pt-2 sm:hidden">
