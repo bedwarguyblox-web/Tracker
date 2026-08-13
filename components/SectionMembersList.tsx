@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { SectionMember } from "@/lib/types";
 
@@ -9,14 +10,19 @@ export default function SectionMembersList({
   onClose,
   activeSectionId,
   sectionName,
+  userEmail,
+  onLeft,
 }: {
   open: boolean;
   onClose: () => void;
   activeSectionId: string | null;
   sectionName?: string;
+  userEmail: string | null;
+  onLeft: () => void;
 }) {
   const [members, setMembers] = useState<SectionMember[]>([]);
   const [loading, setLoading] = useState(false);
+  const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
     if (!open || !activeSectionId) return;
@@ -40,6 +46,26 @@ export default function SectionMembersList({
   }, [open, activeSectionId]);
 
   if (!open) return null;
+
+  async function handleLeave() {
+    if (!activeSectionId || !userEmail) return;
+    if (
+      !window.confirm(
+        `Leave "${sectionName || "this section"}"? You'll need the join code again to come back.`
+      )
+    ) {
+      return;
+    }
+    setLeaving(true);
+    const supabase = createClient();
+    await supabase
+      .from("section_members")
+      .delete()
+      .eq("section_id", activeSectionId)
+      .eq("user_email", userEmail);
+    setLeaving(false);
+    onLeft();
+  }
 
   return (
     <div
@@ -72,13 +98,27 @@ export default function SectionMembersList({
               key={m.id}
               className="rounded-lg border border-folder-100 dark:border-folder-800 px-3 py-2 text-sm font-mono flex items-center justify-between"
             >
-              <span>{m.user_email}</span>
-              <span className="text-xs text-folder-400">
+              <span className="truncate">
+                {m.user_email}
+                {m.user_email === userEmail && (
+                  <span className="ml-2 text-[10px] uppercase text-folder-400">you</span>
+                )}
+              </span>
+              <span className="text-xs text-folder-400 shrink-0 ml-2">
                 {new Date(m.joined_at).toLocaleDateString()}
               </span>
             </li>
           ))}
         </ul>
+
+        <button
+          onClick={handleLeave}
+          disabled={leaving}
+          className="mt-5 w-full inline-flex items-center justify-center gap-2 rounded-full border border-stamp-red/40 text-stamp-red px-4 py-2.5 text-sm font-medium hover:bg-stamp-red/10 transition-colors disabled:opacity-60"
+        >
+          <LogOut size={16} />
+          {leaving ? "Leaving…" : "Leave this section"}
+        </button>
       </div>
     </div>
   );

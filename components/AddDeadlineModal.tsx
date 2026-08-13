@@ -18,11 +18,13 @@ export default function AddDeadlineModal({
   onClose,
   onSubmit,
   editing,
+  subjects,
 }: {
   open: boolean;
   onClose: () => void;
   onSubmit: (values: DeadlineFormValues) => Promise<void>;
   editing: Deadline | null;
+  subjects: string[];
 }) {
   const [values, setValues] = useState<DeadlineFormValues>({
     subject: "",
@@ -83,7 +85,15 @@ export default function AddDeadlineModal({
     if (!validate()) return;
     setSubmitting(true);
     try {
-      await onSubmit(values);
+      // Collapse stray whitespace, and if what was typed matches an
+      // existing subject except for case (e.g. "physics" vs
+      // "Physics"), snap to the existing one instead of creating a
+      // near-duplicate entry in the subject list.
+      const cleanedSubject = values.subject.trim().replace(/\s+/g, " ");
+      const existingMatch = subjects.find(
+        (s) => s.toLowerCase() === cleanedSubject.toLowerCase()
+      );
+      await onSubmit({ ...values, subject: existingMatch || cleanedSubject });
       onClose();
     } finally {
       setSubmitting(false);
@@ -117,11 +127,17 @@ export default function AddDeadlineModal({
           <Field label="Subject" error={errors.subject}>
             <input
               type="text"
+              list="subject-suggestions"
               placeholder="e.g. Physics"
               value={values.subject}
               onChange={(e) => setValues((v) => ({ ...v, subject: e.target.value }))}
               className={inputClass}
             />
+            <datalist id="subject-suggestions">
+              {subjects.map((s) => (
+                <option key={s} value={s} />
+              ))}
+            </datalist>
           </Field>
 
           <Field label="Activity name" error={errors.activity}>

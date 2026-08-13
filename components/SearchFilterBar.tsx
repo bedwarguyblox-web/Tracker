@@ -1,5 +1,6 @@
 "use client";
 
+import { GitMerge } from "lucide-react";
 import type { SortKey } from "@/lib/types";
 
 export default function SearchFilterBar({
@@ -12,6 +13,8 @@ export default function SearchFilterBar({
   onPriorityFilter,
   sort,
   onSort,
+  canEdit,
+  onManageSubjects,
 }: {
   query: string;
   onQuery: (v: string) => void;
@@ -22,6 +25,8 @@ export default function SearchFilterBar({
   onPriorityFilter: (v: string) => void;
   sort: SortKey;
   onSort: (v: SortKey) => void;
+  canEdit: boolean;
+  onManageSubjects: () => void;
 }) {
   return (
     <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
@@ -32,7 +37,7 @@ export default function SearchFilterBar({
         placeholder="Search activity, subject, or description…"
         className="flex-1 rounded-full border border-folder-200 dark:border-folder-700 bg-white/70 dark:bg-white/5 px-4 py-2 text-sm outline-none focus:border-folder-500"
       />
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-2 flex-wrap items-center">
         <select
           value={subjectFilter}
           onChange={(e) => onSubjectFilter(e.target.value)}
@@ -45,6 +50,17 @@ export default function SearchFilterBar({
             </option>
           ))}
         </select>
+
+        {canEdit && subjects.length > 1 && (
+          <button
+            onClick={onManageSubjects}
+            title="Merge duplicate subjects"
+            aria-label="Merge duplicate subjects"
+            className="rounded-full border border-folder-200 dark:border-folder-700 p-2 text-folder-500 hover:text-folder-700 hover:bg-folder-50 dark:hover:bg-folder-900 transition-colors"
+          >
+            <GitMerge size={16} />
+          </button>
+        )}
 
         <select
           value={priorityFilter}

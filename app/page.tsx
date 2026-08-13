@@ -16,6 +16,7 @@ import SectionDashboard, { SectionWithCount } from "@/components/SectionDashboar
 import CreateSectionModal from "@/components/CreateSectionModal";
 import JoinSectionModal from "@/components/JoinSectionModal";
 import SectionMembersList from "@/components/SectionMembersList";
+import ManageSubjectsModal from "@/components/ManageSubjectsModal";
 import { requestNotificationPermission, startNotificationLoop } from "@/lib/notifications";
 
 type ViewKey = "dashboard" | "section";
@@ -36,6 +37,7 @@ export default function HomePage() {
   const [createSectionOpen, setCreateSectionOpen] = useState(false);
   const [joinSectionOpen, setJoinSectionOpen] = useState(false);
   const [membersOpen, setMembersOpen] = useState(false);
+  const [manageSubjectsOpen, setManageSubjectsOpen] = useState(false);
 
   const fetchMySections = useCallback(async () => {
     if (!userEmail) {
@@ -94,6 +96,12 @@ export default function HomePage() {
   function goToSection(section: Section) {
     setActiveSection(section);
     setView("section");
+  }
+
+  async function handleLeaveSection() {
+    setMembersOpen(false);
+    goToDashboard();
+    await fetchMySections();
   }
 
   // ---- Section-scoped deadlines (existing app body) ----
@@ -169,7 +177,7 @@ export default function HomePage() {
   }
 
   const subjects = useMemo(
-    () => Array.from(new Set(deadlines.map((d) => d.subject))).sort(),
+    () => Array.from(new Set(deadlines.filter((d) => !d.deleted).map((d) => d.subject))).sort(),
     [deadlines]
   );
 
@@ -395,6 +403,8 @@ export default function HomePage() {
                 onPriorityFilter={setPriorityFilter}
                 sort={sort}
                 onSort={setSort}
+                canEdit={canEdit}
+                onManageSubjects={() => setManageSubjectsOpen(true)}
               />
             </div>
 
@@ -439,6 +449,7 @@ export default function HomePage() {
       <AddDeadlineModal
         open={modalOpen}
         editing={editing}
+        subjects={subjects}
         onClose={() => {
           setModalOpen(false);
           setEditing(null);
@@ -478,6 +489,16 @@ export default function HomePage() {
         onClose={() => setMembersOpen(false)}
         activeSectionId={activeSectionId}
         sectionName={activeSection?.name}
+        userEmail={userEmail}
+        onLeft={handleLeaveSection}
+      />
+
+      <ManageSubjectsModal
+        open={manageSubjectsOpen}
+        onClose={() => setManageSubjectsOpen(false)}
+        subjects={subjects}
+        activeSectionId={activeSectionId}
+        onMerged={fetchDeadlines}
       />
     </div>
   );
