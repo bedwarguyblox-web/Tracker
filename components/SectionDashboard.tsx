@@ -57,11 +57,12 @@ export default function SectionDashboard({
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {sections.map((s) => (
+          {sections.map((s, i) => (
             <button
               key={s.id}
               onClick={() => onSelectSection(s)}
-              className="text-left rounded-card border border-folder-100 dark:border-folder-800 bg-surface dark:bg-surface-dark shadow-card hover:shadow-cardHover transition-shadow p-4 sm:p-5"
+              style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}
+              className="animate-card-in text-left rounded-card border border-folder-100 dark:border-folder-800 bg-surface dark:bg-surface-dark shadow-card hover:shadow-cardHover active:scale-[0.98] transition-all p-4 sm:p-5"
             >
               <h3 className="font-display text-lg font-semibold leading-snug truncate">
                 {s.name}

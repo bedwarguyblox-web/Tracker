@@ -26,7 +26,7 @@ export default function DeadlineList({
 }) {
   if (deadlines.length === 0) {
     return (
-      <div className="rounded-card border border-dashed border-folder-200 dark:border-folder-700 py-14 text-center text-folder-500">
+      <div className="animate-fade-in rounded-card border border-dashed border-folder-200 dark:border-folder-700 py-14 text-center text-folder-500">
         <p className="font-display text-lg">{emptyMessage}</p>
       </div>
     );
@@ -34,18 +34,23 @@ export default function DeadlineList({
 
   return (
     <div className="flex flex-col gap-3">
-      {deadlines.map((d) => (
-        <DeadlineCard
+      {deadlines.map((d, i) => (
+        <div
           key={d.id}
-          deadline={d}
-          canEdit={canEdit}
-          onEdit={onEdit}
-          onTogglePin={onTogglePin}
-          onToggleComplete={onToggleComplete}
-          onViewHistory={onViewHistory}
-          onDelete={onDelete}
-          onRestore={onRestore}
-        />
+          className="animate-card-in"
+          style={{ animationDelay: `${Math.min(i, 8) * 35}ms` }}
+        >
+          <DeadlineCard
+            deadline={d}
+            canEdit={canEdit}
+            onEdit={onEdit}
+            onTogglePin={onTogglePin}
+            onToggleComplete={onToggleComplete}
+            onViewHistory={onViewHistory}
+            onDelete={onDelete}
+            onRestore={onRestore}
+          />
+        </div>
       ))}
     </div>
   );

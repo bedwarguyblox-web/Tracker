@@ -138,7 +138,7 @@ export default function UserMenu({
         <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)}>
           <div
             onClick={(e) => e.stopPropagation()}
-            className="absolute right-4 top-16 sm:right-0 sm:top-12 w-64 rounded-xl bg-surface dark:bg-surface-dark border border-folder-100 dark:border-folder-800 shadow-cardHover overflow-hidden"
+            className="animate-pop-in origin-top-right absolute right-4 top-16 sm:right-0 sm:top-12 w-64 rounded-xl bg-surface dark:bg-surface-dark border border-folder-100 dark:border-folder-800 shadow-cardHover overflow-hidden"
           >
             <div className="flex items-center gap-3 p-3 border-b border-folder-100 dark:border-folder-800">
               {user.avatarUrl ? (

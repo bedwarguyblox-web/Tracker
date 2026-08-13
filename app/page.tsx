@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useCallback } from "react";
+import { Plus } from "lucide-react";
 import { differenceInCalendarDays, isPast } from "date-fns";
 import { createClient } from "@/lib/supabase/client";
 import type { Deadline, DeadlineHistoryEntry, TabKey, SortKey, Section } from "@/lib/types";
@@ -108,11 +109,17 @@ export default function HomePage() {
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [tab, setTab] = useState<TabKey>("upcoming");
+  const [tab, setTab] = useState<TabKey>(() => {
+    if (typeof window === "undefined") return "upcoming";
+    return (localStorage.getItem("mrc-default-tab") as TabKey) || "upcoming";
+  });
   const [query, setQuery] = useState("");
   const [subjectFilter, setSubjectFilter] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("");
-  const [sort, setSort] = useState<SortKey>("closest");
+  const [sort, setSort] = useState<SortKey>(() => {
+    if (typeof window === "undefined") return "closest";
+    return (localStorage.getItem("mrc-default-sort") as SortKey) || "closest";
+  });
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Deadline | null>(null);
@@ -280,6 +287,7 @@ export default function HomePage() {
       activity: values.activity.trim(),
       description: values.description.trim(),
       due_date: new Date(values.due_date).toISOString(),
+      has_time: values.has_time,
       priority: values.priority,
       attachment_url: values.attachment_url.trim() || null,
       pinned: values.pinned,
@@ -411,20 +419,22 @@ export default function HomePage() {
             {loading ? (
               <p className="text-sm text-folder-500 text-center py-14">Loading deadlines…</p>
             ) : (
-              <DeadlineList
-                deadlines={filtered}
-                canEdit={canEdit}
-                onEdit={(d) => {
-                  setEditing(d);
-                  setModalOpen(true);
-                }}
-                onTogglePin={handleTogglePin}
-                onToggleComplete={handleToggleComplete}
-                onViewHistory={openHistory}
-                onDelete={handleDelete}
-                onRestore={handleRestore}
-                emptyMessage={emptyMessages[tab]}
-              />
+              <div key={tab} className="animate-fade-in">
+                <DeadlineList
+                  deadlines={filtered}
+                  canEdit={canEdit}
+                  onEdit={(d) => {
+                    setEditing(d);
+                    setModalOpen(true);
+                  }}
+                  onTogglePin={handleTogglePin}
+                  onToggleComplete={handleToggleComplete}
+                  onViewHistory={openHistory}
+                  onDelete={handleDelete}
+                  onRestore={handleRestore}
+                  emptyMessage={emptyMessages[tab]}
+                />
+              </div>
             )}
           </>
         )}
@@ -440,9 +450,9 @@ export default function HomePage() {
             setModalOpen(true);
           }}
           aria-label="Add a deadline"
-          className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-40 rounded-full bg-folder-700 text-white w-14 h-14 text-2xl font-light shadow-cardHover hover:bg-folder-800 transition-colors flex items-center justify-center"
+          className="animate-fab-pop fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-40 rounded-full bg-folder-500 text-white w-14 h-14 shadow-cardHover hover:bg-folder-600 hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
         >
-          +
+          <Plus size={26} strokeWidth={2.5} />
         </button>
       )}
 

@@ -60,7 +60,7 @@ export default function DeadlineCard({
                 e.stopPropagation();
                 onToggleComplete(deadline);
               }}
-              className={`h-5 w-5 shrink-0 rounded-full border-2 flex items-center justify-center transition-colors ${
+              className={`h-5 w-5 shrink-0 rounded-full border-2 flex items-center justify-center transition-all active:scale-90 ${
                 done
                   ? "bg-folder-500 border-folder-500 text-white"
                   : "border-folder-300 dark:border-folder-600 hover:border-folder-500"
@@ -123,7 +123,7 @@ export default function DeadlineCard({
                 {styles.label}
               </div>
               <div className="text-xs sm:text-sm font-semibold whitespace-nowrap">
-                {getRemainingLabel(deadline.due_date)}
+                {getRemainingLabel(deadline.due_date, deadline.has_time)}
               </div>
             </div>
           </div>

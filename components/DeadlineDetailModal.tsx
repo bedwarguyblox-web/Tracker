@@ -36,12 +36,12 @@ export default function DeadlineDetailModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-ink/40 dark:bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-ink/40 dark:bg-black/60 backdrop-blur-sm animate-fade-in"
       onClick={onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full sm:max-w-lg max-h-[88vh] overflow-y-auto rounded-t-2xl sm:rounded-card bg-surface dark:bg-surface-dark border border-folder-100 dark:border-folder-800 shadow-cardHover"
+        className="animate-sheet-up w-full sm:max-w-lg max-h-[88vh] overflow-y-auto rounded-t-2xl sm:rounded-card bg-surface dark:bg-surface-dark border border-folder-100 dark:border-folder-800 shadow-cardHover"
       >
         {/* drag-handle affordance, purely visual, hints "this is a sheet" */}
         <div className="flex justify-center pt-2 sm:hidden">
@@ -82,7 +82,7 @@ export default function DeadlineDetailModal({
               <span className="uppercase tracking-wide text-[10px] opacity-80 mr-1.5">
                 {styles.label}
               </span>
-              <span className="font-semibold">{getRemainingLabel(deadline.due_date)}</span>
+              <span className="font-semibold">{getRemainingLabel(deadline.due_date, deadline.has_time)}</span>
             </div>
             {deadline.pinned && (
               <span
@@ -108,7 +108,7 @@ export default function DeadlineDetailModal({
           </div>
 
           <p className="text-sm text-folder-500 dark:text-folder-400 mt-3 font-mono">
-            {formatDueDate(deadline.due_date)}
+            {formatDueDate(deadline.due_date, deadline.has_time)}
           </p>
 
           {deadline.description ? (
