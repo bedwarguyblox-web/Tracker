@@ -17,6 +17,9 @@ export interface Deadline {
   deleted: boolean;
   deleted_by: string | null;
   deleted_at: string | null;
+  completed: boolean;
+  completed_by: string | null;
+  completed_at: string | null;
   section_id: string;
 }
 

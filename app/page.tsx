@@ -240,6 +240,11 @@ export default function HomePage() {
       sorted.sort((a, b) => Number(b.pinned) - Number(a.pinned));
     }
 
+    // Completed items sink to the very bottom, regardless of tab or
+    // sort — Array.sort is stable, so this only reorders by
+    // completed-vs-not and leaves everything else as already sorted.
+    sorted.sort((a, b) => Number(a.completed) - Number(b.completed));
+
     return sorted;
   }, [deadlines, query, subjectFilter, priorityFilter, tab, sort]);
 
@@ -293,6 +298,20 @@ export default function HomePage() {
     await supabase
       .from("deadlines")
       .update({ pinned: !d.pinned, last_edited_by: userEmail })
+      .eq("id", d.id);
+    fetchDeadlines();
+  }
+
+  async function handleToggleComplete(d: Deadline) {
+    if (!userEmail) return;
+    const nowCompleted = !d.completed;
+    await supabase
+      .from("deadlines")
+      .update({
+        completed: nowCompleted,
+        completed_by: userEmail,
+        completed_at: nowCompleted ? new Date().toISOString() : null,
+      })
       .eq("id", d.id);
     fetchDeadlines();
   }
@@ -390,6 +409,7 @@ export default function HomePage() {
                   setModalOpen(true);
                 }}
                 onTogglePin={handleTogglePin}
+                onToggleComplete={handleToggleComplete}
                 onViewHistory={openHistory}
                 onDelete={handleDelete}
                 onRestore={handleRestore}

@@ -8,6 +8,7 @@ export default function DeadlineList({
   canEdit,
   onEdit,
   onTogglePin,
+  onToggleComplete,
   onViewHistory,
   onDelete,
   onRestore,
@@ -17,6 +18,7 @@ export default function DeadlineList({
   canEdit: boolean;
   onEdit: (d: Deadline) => void;
   onTogglePin: (d: Deadline) => void;
+  onToggleComplete: (d: Deadline) => void;
   onViewHistory: (d: Deadline) => void;
   onDelete: (d: Deadline) => void;
   onRestore: (d: Deadline) => void;
@@ -39,6 +41,7 @@ export default function DeadlineList({
           canEdit={canEdit}
           onEdit={onEdit}
           onTogglePin={onTogglePin}
+          onToggleComplete={onToggleComplete}
           onViewHistory={onViewHistory}
           onDelete={onDelete}
           onRestore={onRestore}

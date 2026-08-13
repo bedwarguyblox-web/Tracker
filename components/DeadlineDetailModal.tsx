@@ -15,6 +15,7 @@ export default function DeadlineDetailModal({
   onClose,
   onEdit,
   onTogglePin,
+  onToggleComplete,
   onViewHistory,
   onDelete,
   onRestore,
@@ -24,6 +25,7 @@ export default function DeadlineDetailModal({
   onClose: () => void;
   onEdit: (d: Deadline) => void;
   onTogglePin: (d: Deadline) => void;
+  onToggleComplete: (d: Deadline) => void;
   onViewHistory: (d: Deadline) => void;
   onDelete: (d: Deadline) => void;
   onRestore: (d: Deadline) => void;
@@ -84,6 +86,11 @@ export default function DeadlineDetailModal({
             {deadline.pinned && (
               <span className="text-sm text-stamp-yellow" title="Pinned">
                 📌 Pinned
+              </span>
+            )}
+            {deadline.completed && (
+              <span className="text-sm text-folder-500" title="Done">
+                ✓ Done
               </span>
             )}
             {deadline.priority && deadline.priority !== "normal" && (
@@ -150,6 +157,12 @@ export default function DeadlineDetailModal({
                     className="rounded-full border border-folder-200 dark:border-folder-700 px-4 py-2 text-sm hover:bg-folder-50 dark:hover:bg-folder-900"
                   >
                     {deadline.pinned ? "Unpin" : "Pin"}
+                  </button>
+                  <button
+                    onClick={() => onToggleComplete(deadline)}
+                    className="rounded-full border border-folder-200 dark:border-folder-700 px-4 py-2 text-sm hover:bg-folder-50 dark:hover:bg-folder-900"
+                  >
+                    {deadline.completed ? "Mark not done" : "Mark done"}
                   </button>
                   <button
                     onClick={() => {

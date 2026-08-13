@@ -31,14 +31,21 @@ export default function Header({
             </h1>
           </div>
         ) : (
-          <>
-            <h1 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight">
-              What&apos;s due next
-            </h1>
-            <p className="text-sm text-folder-500 dark:text-folder-400">
-              MRC shared deadline tracker — sorted by urgency, not by month.
-            </p>
-          </>
+          <div className="flex items-center gap-3 min-w-0">
+            <img
+              src="/logo.jpg"
+              alt="Philippine Science High School — MIMAROPA Region Campus"
+              className="h-11 w-11 sm:h-14 sm:w-14 object-contain shrink-0"
+            />
+            <div className="min-w-0">
+              <div className="font-display text-base sm:text-lg font-semibold leading-tight truncate">
+                Philippine Science High School
+              </div>
+              <div className="text-xs sm:text-sm text-folder-500 dark:text-folder-400 leading-tight truncate">
+                MIMAROPA Region Campus
+              </div>
+            </div>
+          </div>
         )}
       </div>
       <div className="flex items-center gap-3">
