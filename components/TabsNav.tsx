@@ -7,6 +7,7 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: "today", label: "Today" },
   { key: "pinned", label: "Pinned" },
   { key: "overdue", label: "Overdue" },
+  { key: "done", label: "Done" },
   { key: "deleted", label: "Deleted" },
   { key: "history", label: "History" },
 ];
@@ -32,7 +33,7 @@ export default function TabsNav({
             onClick={() => onChange(t.key)}
             className={`whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-colors border ${
               isActive
-                ? "bg-folder-700 text-white border-folder-700"
+                ? "bg-folder-500 text-white border-folder-500"
                 : "bg-transparent text-folder-600 dark:text-folder-300 border-folder-200 dark:border-folder-700 hover:bg-folder-50 dark:hover:bg-folder-900"
             }`}
           >

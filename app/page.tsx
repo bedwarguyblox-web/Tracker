@@ -216,10 +216,14 @@ export default function HomePage() {
 
     if (tab === "deleted") {
       list = list.filter((d) => d.deleted);
+    } else if (tab === "done") {
+      list = list.filter((d) => !d.deleted && d.completed);
     } else {
-      // Deleted items never show up in the normal working tabs, they
-      // only live in the Deleted tab (and remain in edit history).
-      list = list.filter((d) => !d.deleted);
+      // Deleted and completed items never show up in the normal
+      // working tabs — deleted lives in the Deleted tab, completed
+      // moves to the Done tab, so counts here only reflect what's
+      // actually still pending.
+      list = list.filter((d) => !d.deleted && !d.completed);
 
       switch (tab) {
         case "upcoming":
@@ -264,17 +268,12 @@ export default function HomePage() {
       sorted.sort((a, b) => Number(b.pinned) - Number(a.pinned));
     }
 
-    // Completed items sink to the very bottom, regardless of tab or
-    // sort — Array.sort is stable, so this only reorders by
-    // completed-vs-not and leaves everything else as already sorted.
-    sorted.sort((a, b) => Number(a.completed) - Number(b.completed));
-
     return sorted;
   }, [deadlines, query, subjectFilter, priorityFilter, tab, sort]);
 
   const counts = useMemo(() => {
     const now = new Date();
-    const active = deadlines.filter((d) => !d.deleted);
+    const active = deadlines.filter((d) => !d.deleted && !d.completed);
     return {
       upcoming: active.filter((d) => differenceInCalendarDays(new Date(d.due_date), now) >= 0)
         .length,
@@ -285,6 +284,7 @@ export default function HomePage() {
         (d) => isPast(new Date(d.due_date)) && differenceInCalendarDays(new Date(d.due_date), now) < 0
       ).length,
       history: active.filter((d) => d.edit_count > 0).length,
+      done: deadlines.filter((d) => !d.deleted && d.completed).length,
       deleted: deadlines.filter((d) => d.deleted).length,
     } as Record<TabKey, number>;
   }, [deadlines]);
@@ -376,6 +376,7 @@ export default function HomePage() {
     today: "Nothing due today.",
     pinned: "No pinned deadlines yet.",
     overdue: "No overdue deadlines. Nice.",
+    done: "Nothing marked done yet.",
     history: "No edits have been made yet.",
     deleted: "Nothing's been deleted — nice and clean.",
   };
@@ -413,7 +414,7 @@ export default function HomePage() {
         ) : (
           <>
             <div className="mb-5">
-              <DashboardStats deadlines={deadlines} />
+              <DashboardStats deadlines={deadlines} activeTab={tab} onSelectTab={setTab} />
             </div>
 
             <div className="mb-4">

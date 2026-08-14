@@ -80,6 +80,6 @@ export type UrgencyStage =
   | "yellow" // <= 7 days
   | "normal";
 
-export type TabKey = "upcoming" | "today" | "pinned" | "overdue" | "deleted" | "history";
+export type TabKey = "upcoming" | "today" | "pinned" | "overdue" | "done" | "deleted" | "history";
 
 export type SortKey = "closest" | "furthest" | "recent" | "subject";
