@@ -18,7 +18,7 @@ import CreateSectionModal from "@/components/CreateSectionModal";
 import JoinSectionModal from "@/components/JoinSectionModal";
 import SectionMembersList from "@/components/SectionMembersList";
 import ManageSubjectsModal from "@/components/ManageSubjectsModal";
-import { requestNotificationPermission, startNotificationLoop } from "@/lib/notifications";
+import { requestNotificationPermission, startNotificationLoop, registerServiceWorker } from "@/lib/notifications";
 
 type ViewKey = "dashboard" | "section";
 
@@ -167,6 +167,12 @@ export default function HomePage() {
       supabase.removeChannel(channel);
     };
   }, [view, activeSectionId, fetchDeadlines, supabase]);
+
+  // Register the service worker as early as possible — it's required
+  // for notifications to actually display on Android Chrome.
+  useEffect(() => {
+    registerServiceWorker();
+  }, []);
 
   // Notifications: ask for permission on first meaningful interaction,
   // then re-check milestones periodically while the tab is open.

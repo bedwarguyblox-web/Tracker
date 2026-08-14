@@ -19,6 +19,23 @@ function writeLog(log: NotifiedLog) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(log));
 }
 
+/**
+ * Registers the service worker that actually shows notifications on
+ * Android Chrome (which refuses `new Notification()` outright and
+ * only allows `registration.showNotification()`). Safe to call
+ * repeatedly — the browser no-ops if it's already registered. Call
+ * this once, early, on app load, so it's ready by the time a
+ * notification needs to fire.
+ */
+export async function registerServiceWorker() {
+  if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
+  try {
+    await navigator.serviceWorker.register("/sw.js");
+  } catch (err) {
+    console.warn("Service worker registration failed; notifications may not work on this browser.", err);
+  }
+}
+
 export async function requestNotificationPermission(): Promise<NotificationPermission> {
   if (!("Notification" in window)) return "denied";
   if (Notification.permission === "default") {
@@ -34,10 +51,10 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
  * in localStorage (not a timer), this naturally "resumes" and catches
  * up whenever the site is reopened, rather than relying on the tab
  * staying open. For true background delivery when the site is fully
- * closed, this would need a Service Worker + the Push API and a small
- * server component to trigger pushes — this app checks on load and on
- * an interval while the tab is open instead, which covers the common
- * case without extra infrastructure.
+ * closed, this would need the Push API and a small server component
+ * to trigger pushes — this app checks on load and on an interval
+ * while the tab is open instead, which covers the common case
+ * without extra server infrastructure.
  */
 export function checkAndNotify(deadlines: Deadline[]) {
   if (!("Notification" in window) || Notification.permission !== "granted") return;
@@ -72,16 +89,23 @@ export function checkAndNotify(deadlines: Deadline[]) {
 }
 
 /**
- * Some mobile browsers (notably Chrome on Android) don't support the
- * `new Notification()` constructor at all — they throw
- * "Illegal constructor" and require a Service Worker's
- * `registration.showNotification()` instead. Rather than add a full
- * service worker just for this, we try the constructor and fail
- * silently if it's unsupported, so a missed notification never takes
- * down the rest of the app.
+ * Shows a notification via the service worker when one is available
+ * (required on Android Chrome — `new Notification()` throws there),
+ * falling back to the plain constructor for browsers that support it
+ * directly. If neither works, fails quietly rather than crashing.
  */
-function fireNotification(title: string, options: NotificationOptions) {
+async function fireNotification(title: string, options: NotificationOptions) {
   try {
+    if ("serviceWorker" in navigator) {
+      const registration = await Promise.race([
+        navigator.serviceWorker.ready,
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500)),
+      ]);
+      if (registration) {
+        await (registration as ServiceWorkerRegistration).showNotification(title, options);
+        return;
+      }
+    }
     new Notification(title, options);
   } catch (err) {
     console.warn("Notification not supported in this browser; skipping.", err);
