@@ -27,16 +27,40 @@ export interface Deadline {
 export interface Section {
   id: string;
   name: string;
+  description: string | null;
   join_code: string;
   created_by: string;
   created_at: string;
 }
 
+export type MemberRole = "admin" | "member";
+
 export interface SectionMember {
   id: string;
   section_id: string;
   user_email: string;
+  role: MemberRole;
   joined_at: string;
+}
+
+export interface SectionInvite {
+  id: string;
+  section_id: string;
+  token: string;
+  created_by: string;
+  created_at: string;
+  expires_at: string;
+  max_uses: number | null;
+  use_count: number;
+  revoked: boolean;
+}
+
+export interface SectionMessage {
+  id: string;
+  section_id: string;
+  sender_email: string;
+  body: string;
+  created_at: string;
 }
 
 export interface DeadlineHistoryEntry {

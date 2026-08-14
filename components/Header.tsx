@@ -1,5 +1,6 @@
 "use client";
 
+import { Users, MessageCircle } from "lucide-react";
 import UserMenu from "./UserMenu";
 
 export default function Header({
@@ -7,11 +8,13 @@ export default function Header({
   sectionName,
   onBack,
   onShowMembers,
+  onShowChat,
 }: {
   onUserChange: (email: string | null) => void;
   sectionName?: string | null;
   onBack?: () => void;
   onShowMembers?: () => void;
+  onShowChat?: () => void;
 }) {
   return (
     <header className="flex items-center justify-between gap-4 py-5">
@@ -50,13 +53,23 @@ export default function Header({
           </div>
         )}
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
+        {sectionName && onShowChat && (
+          <button
+            onClick={onShowChat}
+            aria-label="Section chat"
+            className="rounded-full border border-folder-200 dark:border-folder-700 p-2 text-folder-500 hover:text-folder-700 hover:bg-folder-50 dark:hover:bg-folder-900 transition-colors"
+          >
+            <MessageCircle size={17} />
+          </button>
+        )}
         {sectionName && onShowMembers && (
           <button
             onClick={onShowMembers}
-            className="rounded-full border border-folder-200 dark:border-folder-700 px-3 py-1.5 text-sm hover:bg-folder-50 dark:hover:bg-folder-900 transition-colors"
+            aria-label="Members"
+            className="rounded-full border border-folder-200 dark:border-folder-700 p-2 text-folder-500 hover:text-folder-700 hover:bg-folder-50 dark:hover:bg-folder-900 transition-colors"
           >
-            Members
+            <Users size={17} />
           </button>
         )}
         <UserMenu onUserChange={onUserChange} />

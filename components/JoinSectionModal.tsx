@@ -66,7 +66,10 @@ export default function JoinSectionModal({
         onSubmit={handleSubmit}
         className="animate-sheet-up w-full sm:max-w-lg max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-card bg-surface dark:bg-surface-dark border border-folder-100 dark:border-folder-800 shadow-cardHover p-6"
       >
-        <h2 className="font-display text-xl font-semibold mb-4">Join a section</h2>
+        <h2 className="font-display text-xl font-semibold mb-1">Join a section</h2>
+        <p className="text-xs text-folder-500 dark:text-folder-400 mb-4">
+          Got an invite link? Just tap it — this is only for section codes shared directly.
+        </p>
 
         <div className="space-y-4">
           <label className="block">
@@ -95,7 +98,7 @@ export default function JoinSectionModal({
           <button
             type="submit"
             disabled={submitting}
-            className="rounded-full px-4 py-2 text-sm bg-folder-700 text-white hover:bg-folder-800 disabled:opacity-60"
+            className="rounded-full px-4 py-2 text-sm bg-folder-500 text-white hover:bg-folder-600 disabled:opacity-60"
           >
             {submitting ? "Joining…" : "Join section"}
           </button>

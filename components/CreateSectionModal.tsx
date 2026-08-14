@@ -30,6 +30,7 @@ export default function CreateSectionModal({
   userEmail: string | null;
 }) {
   const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -53,7 +54,12 @@ export default function CreateSectionModal({
         const join_code = generateJoinCode();
         const { data, error: insertError } = await supabase
           .from("sections")
-          .insert({ name: name.trim(), join_code, created_by: userEmail })
+          .insert({
+            name: name.trim(),
+            description: description.trim() || null,
+            join_code,
+            created_by: userEmail,
+          })
           .select("*")
           .single();
 
@@ -71,12 +77,12 @@ export default function CreateSectionModal({
         return;
       }
 
-      // Membership for the creator is now added automatically by a
-      // database trigger (auto_join_creator) — direct client inserts
-      // into section_members are blocked by RLS, since joining is only
-      // allowed through a verified code or that trigger.
+      // Membership for the creator (as admin) is added automatically
+      // by a database trigger — direct client inserts into
+      // section_members are blocked by RLS.
 
       setName("");
+      setDescription("");
       onCreated(created);
       onClose();
     } catch (err) {
@@ -97,6 +103,9 @@ export default function CreateSectionModal({
         className="animate-sheet-up w-full sm:max-w-lg max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-card bg-surface dark:bg-surface-dark border border-folder-100 dark:border-folder-800 shadow-cardHover p-6"
       >
         <h2 className="font-display text-xl font-semibold mb-4">Create a section</h2>
+        <p className="text-xs text-folder-500 dark:text-folder-400 mb-4">
+          You'll automatically become this section's admin.
+        </p>
 
         <div className="space-y-4">
           <label className="block">
@@ -112,6 +121,19 @@ export default function CreateSectionModal({
             />
             {error && <span className="block text-xs text-stamp-red mt-1">{error}</span>}
           </label>
+
+          <label className="block">
+            <span className="block text-xs font-medium text-folder-600 dark:text-folder-300 mb-1">
+              Description (optional)
+            </span>
+            <textarea
+              rows={2}
+              placeholder="What's this section for?"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full rounded-lg border border-folder-200 dark:border-folder-700 bg-white/70 dark:bg-white/5 px-3 py-2 text-sm outline-none focus:border-folder-500"
+            />
+          </label>
         </div>
 
         <div className="flex justify-end gap-2 mt-6">
@@ -125,7 +147,7 @@ export default function CreateSectionModal({
           <button
             type="submit"
             disabled={submitting}
-            className="rounded-full px-4 py-2 text-sm bg-folder-700 text-white hover:bg-folder-800 disabled:opacity-60"
+            className="rounded-full px-4 py-2 text-sm bg-folder-500 text-white hover:bg-folder-600 disabled:opacity-60"
           >
             {submitting ? "Creating…" : "Create section"}
           </button>
