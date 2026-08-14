@@ -14,6 +14,7 @@ import DeadlineList from "@/components/DeadlineList";
 import AddDeadlineModal, { DeadlineFormValues } from "@/components/AddDeadlineModal";
 import HistoryModal from "@/components/HistoryModal";
 import SectionDashboard, { SectionWithCount } from "@/components/SectionDashboard";
+import LiveViewerCount from "@/components/LiveViewerCount";
 import CreateSectionModal from "@/components/CreateSectionModal";
 import JoinSectionModal from "@/components/JoinSectionModal";
 import SectionMembersList from "@/components/SectionMembersList";
@@ -393,14 +394,17 @@ export default function HomePage() {
         />
 
         {view === "dashboard" ? (
-          <SectionDashboard
-            sections={mySections}
-            loading={sectionsLoading}
-            canCreate={canEdit}
-            onSelectSection={goToSection}
-            onCreateClick={() => setCreateSectionOpen(true)}
-            onJoinClick={() => setJoinSectionOpen(true)}
-          />
+          <>
+            <SectionDashboard
+              sections={mySections}
+              loading={sectionsLoading}
+              canCreate={canEdit}
+              onSelectSection={goToSection}
+              onCreateClick={() => setCreateSectionOpen(true)}
+              onJoinClick={() => setJoinSectionOpen(true)}
+            />
+            <LiveViewerCount userEmail={userEmail} />
+          </>
         ) : view === "chat" ? (
           activeSectionId && (
             <SectionChat
