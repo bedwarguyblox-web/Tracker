@@ -17,10 +17,11 @@ import SectionDashboard, { SectionWithCount } from "@/components/SectionDashboar
 import CreateSectionModal from "@/components/CreateSectionModal";
 import JoinSectionModal from "@/components/JoinSectionModal";
 import SectionMembersList from "@/components/SectionMembersList";
+import SectionChat from "@/components/SectionChat";
 import ManageSubjectsModal from "@/components/ManageSubjectsModal";
 import { requestNotificationPermission, startNotificationLoop, registerServiceWorker } from "@/lib/notifications";
 
-type ViewKey = "dashboard" | "section";
+type ViewKey = "dashboard" | "section" | "chat";
 
 export default function HomePage() {
   const supabase = useMemo(() => createClient(), []);
@@ -34,6 +35,8 @@ export default function HomePage() {
 
   const [mySections, setMySections] = useState<SectionWithCount[]>([]);
   const [sectionsLoading, setSectionsLoading] = useState(true);
+  const isSectionAdmin =
+    mySections.find((s) => s.id === activeSectionId)?.role === "admin";
 
   const [createSectionOpen, setCreateSectionOpen] = useState(false);
   const [joinSectionOpen, setJoinSectionOpen] = useState(false);
@@ -50,11 +53,11 @@ export default function HomePage() {
 
     const { data: memberships } = await supabase
       .from("section_members")
-      .select("section_id, sections(*)")
+      .select("section_id, role, sections(*)")
       .eq("user_email", userEmail);
 
-    const sections: Section[] = (memberships || [])
-      .map((m: any) => m.sections)
+    const sections: (Section & { role: "admin" | "member" })[] = (memberships || [])
+      .map((m: any) => (m.sections ? { ...m.sections, role: m.role } : null))
       .filter(Boolean);
 
     if (sections.length === 0) {
@@ -382,9 +385,10 @@ export default function HomePage() {
       <div className="mx-auto max-w-3xl px-4 sm:px-6">
         <Header
           onUserChange={setUserEmail}
-          sectionName={view === "section" ? activeSection?.name : null}
-          onBack={view === "section" ? goToDashboard : undefined}
-          onShowMembers={view === "section" ? () => setMembersOpen(true) : undefined}
+          sectionName={view !== "dashboard" ? activeSection?.name : null}
+          onBack={view !== "dashboard" ? goToDashboard : undefined}
+          onShowMembers={view !== "dashboard" ? () => setMembersOpen(true) : undefined}
+          onShowChat={view === "section" ? () => setView("chat") : undefined}
         />
 
         {view === "dashboard" ? (
@@ -396,6 +400,16 @@ export default function HomePage() {
             onCreateClick={() => setCreateSectionOpen(true)}
             onJoinClick={() => setJoinSectionOpen(true)}
           />
+        ) : view === "chat" ? (
+          activeSectionId && (
+            <SectionChat
+              sectionId={activeSectionId}
+              sectionName={activeSection?.name}
+              userEmail={userEmail}
+              isAdmin={isSectionAdmin}
+              onBack={() => setView("section")}
+            />
+          )
         ) : (
           <>
             <div className="mb-5">
@@ -506,6 +520,7 @@ export default function HomePage() {
         activeSectionId={activeSectionId}
         sectionName={activeSection?.name}
         userEmail={userEmail}
+        isAdmin={isSectionAdmin}
         onLeft={handleLeaveSection}
       />
 
