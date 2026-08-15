@@ -24,7 +24,7 @@ export default function AddDeadlineModal({
 }: {
   open: boolean;
   onClose: () => void;
-  onSubmit: (values: DeadlineFormValues) => Promise<void>;
+  onSubmit: (values: DeadlineFormValues) => Promise<boolean | void>;
   editing: Deadline | null;
   subjects: string[];
 }) {
@@ -123,12 +123,12 @@ export default function AddDeadlineModal({
       // urgency/sorting logic keeps working unchanged.
       const finalDueDate = values.has_time ? values.due_date : `${values.due_date}T23:59`;
 
-      await onSubmit({
+      const succeeded = await onSubmit({
         ...values,
         subject: existingMatch || cleanedSubject,
         due_date: finalDueDate,
       });
-      onClose();
+      if (succeeded !== false) onClose();
     } finally {
       setSubmitting(false);
     }

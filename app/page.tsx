@@ -304,16 +304,24 @@ export default function HomePage() {
     };
 
     if (editing) {
-      await supabase
+      const { error } = await supabase
         .from("deadlines")
         .update({ ...payload, last_edited_by: userEmail })
         .eq("id", editing.id);
+      if (error) {
+        window.alert(`Couldn't save changes: ${error.message}`);
+        return false;
+      }
     } else {
-      await supabase.from("deadlines").insert({
+      const { error } = await supabase.from("deadlines").insert({
         ...payload,
         created_by: userEmail,
         section_id: activeSectionId,
       });
+      if (error) {
+        window.alert(`Couldn't add deadline: ${error.message}`);
+        return false;
+      }
     }
     setEditing(null);
     fetchDeadlines();
@@ -321,17 +329,21 @@ export default function HomePage() {
 
   async function handleTogglePin(d: Deadline) {
     if (!userEmail) return;
-    await supabase
+    const { error } = await supabase
       .from("deadlines")
       .update({ pinned: !d.pinned, last_edited_by: userEmail })
       .eq("id", d.id);
+    if (error) {
+      window.alert(`Couldn't update: ${error.message}`);
+      return;
+    }
     fetchDeadlines();
   }
 
   async function handleToggleComplete(d: Deadline) {
     if (!userEmail) return;
     const nowCompleted = !d.completed;
-    await supabase
+    const { error } = await supabase
       .from("deadlines")
       .update({
         completed: nowCompleted,
@@ -339,24 +351,36 @@ export default function HomePage() {
         completed_at: nowCompleted ? new Date().toISOString() : null,
       })
       .eq("id", d.id);
+    if (error) {
+      window.alert(`Couldn't update: ${error.message}`);
+      return;
+    }
     fetchDeadlines();
   }
 
   async function handleDelete(d: Deadline) {
     if (!userEmail) return;
-    await supabase
+    const { error } = await supabase
       .from("deadlines")
       .update({ deleted: true, deleted_by: userEmail })
       .eq("id", d.id);
+    if (error) {
+      window.alert(`Couldn't delete: ${error.message}`);
+      return;
+    }
     fetchDeadlines();
   }
 
   async function handleRestore(d: Deadline) {
     if (!userEmail) return;
-    await supabase
+    const { error } = await supabase
       .from("deadlines")
       .update({ deleted: false, deleted_by: userEmail })
       .eq("id", d.id);
+    if (error) {
+      window.alert(`Couldn't restore: ${error.message}`);
+      return;
+    }
     fetchDeadlines();
   }
 
